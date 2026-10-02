@@ -56,11 +56,21 @@ function transformType(type: FnLayoutType): string {
   if (typeof type === 'string') {
     return type
   }
+  // three r184: struct() exposes its StructTypeNode on .layout.
   if ('layout' in type && type.layout instanceof StructTypeNode) {
     if (type.layout.name == null) {
       throw new Error('Struct name is required.')
     }
     return type.layout.name
+  }
+  // three r185+: struct() returns a proxy that forwards property reads to its
+  // StructTypeNode. The proxy has no "has" trap, so test by reading, not "in".
+  const node = type as unknown as { isStructTypeNode?: boolean; name?: string }
+  if (node.isStructTypeNode === true) {
+    if (node.name == null) {
+      throw new Error('Struct name is required.')
+    }
+    return node.name
   }
   throw new Error(`Unsupported layout type: ${type}`)
 }
