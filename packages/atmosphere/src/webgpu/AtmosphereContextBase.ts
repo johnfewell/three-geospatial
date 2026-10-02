@@ -22,7 +22,7 @@ import {
 // three r184 exposes the StructTypeNode on struct().layout. From r185, struct()
 // returns a proxy that forwards property reads to the StructTypeNode instead,
 // so .layout is gone and .name is read directly.
-export function structName(struct: object): string {
+function structName(struct: object): string {
   const node: { name?: string | null } =
     'layout' in struct && struct.layout != null ? struct.layout : struct
   if (node.name == null) {
