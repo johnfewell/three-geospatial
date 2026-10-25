@@ -48,6 +48,15 @@ export class AerialPerspectiveNode extends TempNode {
   skyNode: SkyNode | null = null
   normalNode: Node<'vec3'> | null = null
 
+  // Transmittance (0-1) of an occluder such as clouds toward the sun, applied
+  // only to the direct solar illuminance when lighting is enabled.
+  shadowNode: Node<'float'> | null = null
+
+  // Per-pixel amount (0-1) of lighting applied when lighting is enabled. Where
+  // it is 0 the input color is kept as self-lit, still with transmittance and
+  // inscattering applied.
+  lightingMaskNode: Node<'float'> | null = null
+
   cameraPositionUnit: Node<'vec3'> | null = null
   rayDirectionECEF: Node<'vec3'> | null = null
 
@@ -214,7 +223,9 @@ export class AerialPerspectiveNode extends TempNode {
           sunDirectionECEF
         ).toConst()
         let illuminance = add(
-          solarIlluminance.get('direct'),
+          this.shadowNode != null
+            ? solarIlluminance.get('direct').mul(this.shadowNode)
+            : solarIlluminance.get('direct'),
           solarIlluminance.get('indirect')
         )
         if (this.moonScattering) {
@@ -263,6 +274,12 @@ export class AerialPerspectiveNode extends TempNode {
       let output = luminance
       if (this.transmittance) {
         output = output.mul(transmittance)
+      }
+      if (this.lighting && this.lightingMaskNode != null) {
+        const selfLit = this.transmittance
+          ? colorNode.rgb.mul(transmittance)
+          : colorNode.rgb
+        output = mix(selfLit, output, this.lightingMaskNode.clamp(0, 1))
       }
       if (this.inscattering) {
         output = output.add(inscattering)
