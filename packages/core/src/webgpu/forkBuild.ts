@@ -3,7 +3,7 @@
 // raySpheresIntersectionsLanes is the number of radius lanes the mask covers.
 // r186Kernels: the atmosphere LUT kernels compile correctly on three r186.
 export const forkBuild = {
-  release: 6,
+  release: 7,
   raySpheresIntersectionsLanes: 4,
   r186Kernels: true
 } as const
