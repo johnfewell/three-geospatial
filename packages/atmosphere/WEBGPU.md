@@ -374,6 +374,14 @@ Whether to raymarch inscattered light between the camera and scene objects inste
 > [!TIP]
 > Enabling this option might slightly increase computational cost depending on the device, but in general it is recommended to keep it enabled. Consider disabling it when the render output requires temporal stability, such as when temporal antialiasing cannot be used, because raymarching uses STBN which introduces temporal noise to reduce aliasing along the rays.
 
+#### lookupGroundLift
+
+```ts
+lookupGroundLift = 0.01
+```
+
+The fraction of the atmosphere's thickness by which the LUT lookup path (with `raymarchScattering` disabled) lifts the camera and the scene point above the bottom radius before the lookup, about 600 meters for the default parameters. The inscattered light and transmittance are then extrapolated to the original segment length. Set it to `0` to clamp both only to the bottom radius, which keeps near-ground segments closer to the raymarched result but can show artifacts where the scattering below the bottom is undefined. It takes effect when the graph is built.
+
 <a id='-atmosphere-light'></a>
 
 ## AtmosphereLight

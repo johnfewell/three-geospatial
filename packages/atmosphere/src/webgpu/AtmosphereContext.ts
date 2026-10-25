@@ -87,6 +87,11 @@ export class AtmosphereContext extends AtmosphereContextBase {
   accurateShadowScattering = true
   raymarchScattering = true
 
+  // Fraction of the atmosphere thickness the lookup path (raymarchScattering
+  // off) lifts the camera and point above the bottom radius by. Zero clamps
+  // them to the bottom radius only.
+  lookupGroundLift = 0.01
+
   constructor(
     parameters = new AtmosphereParameters(),
     lutNode = new AtmosphereLUTNode(parameters)

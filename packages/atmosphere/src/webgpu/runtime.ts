@@ -706,7 +706,7 @@ const getIndirectRadianceToPoint = /*#__PURE__*/ FnVar(
       // which the scattering is undefined.
       if (!context.raymarchScattering) {
         const safeBottomRadius = bottomRadius
-          .add(topRadius.sub(bottomRadius).mul(0.01)) // 600 meters for the default parameters
+          .add(topRadius.sub(bottomRadius).mul(context.lookupGroundLift)) // 600 meters for the default parameters
           .toConst()
         const clampedPoint = point
           .mul(safeBottomRadius.div(point.length()).max(1))
