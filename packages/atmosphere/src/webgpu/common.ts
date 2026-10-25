@@ -663,11 +663,15 @@ const getParamsFromScatteringTextureCoord = /*#__PURE__*/ FnLayout({
   const distanceToHorizon = H.mul(
     getUnitRangeFromTextureCoord(coord.w, scatteringTextureRadiusSize)
   ).toConst()
-  const radius = sqrt(distanceToHorizon.pow2().add(bottomRadius.pow2()))
+  // three r186 (#34251) declares a node shared by If, Else and the code after
+  // them in one branch only, so each of the three builds its own radius.
+  const getRadius = (): Node<'float'> =>
+    sqrt(distanceToHorizon.pow2().add(bottomRadius.pow2()))
 
   const cosView = float(0).toVar()
   const intersectsGround = bool().toVar()
   If(coord.z.lessThan(0.5), () => {
+    const radius = getRadius()
     // Distance to the ground for the ray (radius, cosView), and its minimum
     // and maximum values over all cosView - obtained for (radius, -1) and
     // (radius, cosHorizon) - from which we can recover cosView.
@@ -699,6 +703,7 @@ const getParamsFromScatteringTextureCoord = /*#__PURE__*/ FnLayout({
     )
     intersectsGround.assign(bool(true))
   }).Else(() => {
+    const radius = getRadius()
     // Distance to the top atmosphere boundary for the ray (radius, cosView),
     // and its minimum and maximum values over all cosView - obtained for
     // (radius, 1) and (radius, cosHorizon) - from which we can recover
@@ -758,7 +763,7 @@ const getParamsFromScatteringTextureCoord = /*#__PURE__*/ FnLayout({
   const cosViewLight = clampCosine(coord.x.mul(2).sub(1))
 
   return scatteringParamsStruct(
-    radius,
+    getRadius(),
     cosView,
     cosLight,
     cosViewLight,
