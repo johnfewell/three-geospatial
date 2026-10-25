@@ -1,0 +1,7 @@
+// Identifies this fork build, so a consumer that depends on fork-only
+// semantics can check them at load time instead of rendering wrong output.
+// raySpheresIntersectionsLanes is the number of radius lanes the mask covers.
+export const forkBuild = {
+  release: 5,
+  raySpheresIntersectionsLanes: 4
+} as const
