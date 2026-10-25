@@ -11,8 +11,11 @@ import {
   uvec2,
   uvec3,
   uvec4,
-  vec2
+  vec2,
+  vec3,
+  vec4
 } from 'three/tsl'
+import type { NodeBuilder } from 'three/webgpu'
 
 import { FnLayout } from './FnLayout'
 import { FnVar } from './FnVar'
@@ -140,20 +143,27 @@ export const raySpheresIntersections = /*#__PURE__*/ FnVar(
     rayDirection: Node<'vec3'>,
     center: Node<'vec3'>,
     radii: Node // Scalar or vector
-  ) => {
-    const a = rayOrigin.sub(center)
-    const b = dot(rayDirection, a)
-    const c = dot(a, a).sub(radii.pow2())
-    const discriminant = b.pow2().sub(c).toConst()
+  ) =>
+    (builder: NodeBuilder) => {
+      const a = rayOrigin.sub(center)
+      const b = dot(rayDirection, a)
+      const c = dot(a, a).sub(radii.pow2())
+      const discriminant = b.pow2().sub(c).toConst()
 
-    // Reference: https://github.com/GameTechDev/OutdoorLightScattering/blob/master/fx/Common.fxh#L148
-    const mask = vec2(discriminant.greaterThanEqual(0)).toConst()
-    const inverseMask = mask.oneMinus().toConst()
-    const Q = sqrt(discriminant.max(0)).toConst()
-    const near = mask.mul(b.negate().sub(Q)).sub(inverseMask)
-    const far = mask.mul(b.negate().add(Q)).sub(inverseMask)
-    return raySpheresIntersectionsStruct(near, far)
-  }
+      // Reference: https://github.com/GameTechDev/OutdoorLightScattering/blob/master/fx/Common.fxh#L148
+      // One mask lane per radius, so vec3 and vec4 radii intersect all of
+      // their spheres. A scalar or vec2 keeps the vec2 mask.
+      const lanes = builder.getTypeLength(
+        discriminant.getNodeType(builder) ?? 'vec2'
+      )
+      const maskOf = lanes === 4 ? vec4 : lanes === 3 ? vec3 : vec2
+      const mask = maskOf(discriminant.greaterThanEqual(0)).toConst()
+      const inverseMask = mask.oneMinus().toConst()
+      const Q = sqrt(discriminant.max(0)).toConst()
+      const near = mask.mul(b.negate().sub(Q)).sub(inverseMask)
+      const far = mask.mul(b.negate().add(Q)).sub(inverseMask)
+      return raySpheresIntersectionsStruct(near, far)
+    }
 )
 
 export const rayEllipsoidIntersection = /*#__PURE__*/ FnVar(
