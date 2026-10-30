@@ -8,6 +8,8 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 
+import { modernUniformDeclarations } from '../../tools/modern-uniform-declarations'
+
 export default defineConfig({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/packages/core',
@@ -16,6 +18,7 @@ export default defineConfig({
     nxViteTsPaths(),
     nxCopyAssetsPlugin(['src/**/*', '*.md']),
     dts({
+      beforeWriteFile: modernUniformDeclarations,
       outDir: '../../dist/packages/core/types',
       entryRoot: 'src',
       tsconfigPath: path.join(__dirname, 'tsconfig.lib.json'),

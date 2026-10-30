@@ -2,6 +2,6 @@
 // the atmosphere's own fork-only semantics instead of inferring them from core.
 // r186Kernels: the atmosphere LUT kernels compile correctly on three r186.
 export const forkBuild = {
-  release: 7,
+  release: 8,
   r186Kernels: true
 } as const
